@@ -1,11 +1,14 @@
 package ar.com.itba.ss.datasetgenerator.engine.utils;
 
 import java.awt.image.BufferedImage;
-
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,9 +43,37 @@ public class FileUtils {
 		
 	}
 	
+	public static String readStringFromFile(File file) {
+		
+		try {
+			
+			InputStream is = new FileInputStream(file);
+			BufferedReader buf = new BufferedReader(new InputStreamReader(is));
+			
+			String line = buf.readLine(); 
+			StringBuilder sb = new StringBuilder();
+			
+			while(line != null) { 
+				sb.append(line).append("\n");
+				line = buf.readLine();
+			} 
+			
+			buf.close();
+			
+			return sb.toString();
+			
+		} catch (Exception exception) {
+			
+			throw new RuntimeException("Exception while reading from file " + file.getName());
+			
+		}
+		
+		
+	}
+	
 	public static void saveImage(SSImage image) {
 		
-		File file = new File(image.getBasepath() + image.getFilename());
+		File file = new File(format("%s/%s", image.getBasepath(), image.getFilename()));
 		
 		try {
 			ImageIO.write(image.getBufferedImage(), image.getExtension(), file);
@@ -105,6 +136,14 @@ public class FileUtils {
 		}
 		
 		return imageList;
+		
+	}
+	
+	public static SSImage readImage(String basepath, String filename) {
+		
+		File file = new File(format("%s/%s", basepath, filename));
+		
+		return fileToSSImage(basepath, file);
 		
 	}
 	

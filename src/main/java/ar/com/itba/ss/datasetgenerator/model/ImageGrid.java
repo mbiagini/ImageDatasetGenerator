@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ar.com.itba.ss.datasetgenerator.model.imagegeneration.ImageResource;
+
 public class ImageGrid {
 	
 	private int width;
@@ -13,13 +15,12 @@ public class ImageGrid {
 	private Integer[][] colorCanvas;
 	private Integer[][] irCanvas;
 	
-	private List<Person> people;
+	private List<ImageResource> people;
+	private ImageResource background;
 	
 	private Map<Long, List<Point>> peoplePositions;
-	
-	private SSImage background;
-		
-	public ImageGrid(SSImage background, List<Person> people, Integer[][] colorCanvas, Integer[][] irCanvas) {
+			
+	public ImageGrid(ImageResource background, List<ImageResource> people, Integer[][] colorCanvas, Integer[][] irCanvas) {
 		
 		this.width = background.getWidth();
 		this.height = background.getHeight();
@@ -51,11 +52,11 @@ public class ImageGrid {
 		return irCanvas;
 	}
 	
-	public SSImage getBackground() {
+	public ImageResource getBackground() {
 		return background;
 	}
 	
-	public List<Person> getPeople() {
+	public List<ImageResource> getPeople() {
 		return people;
 	}
 	

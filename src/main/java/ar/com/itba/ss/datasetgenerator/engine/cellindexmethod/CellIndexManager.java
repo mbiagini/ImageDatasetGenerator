@@ -177,10 +177,31 @@ public class CellIndexManager {
 		
 	}
 	
-	private static double getDistance(Particle p1, Particle p2) {
-		double centerDistance = Math.hypot(Math.abs(p2.getX() - p1.getX()),
-				Math.abs(p2.getY() - p1.getY()));
+	public static boolean isOverlappingAny(Particle particle, List<Particle> particles) {
+		for (Particle p : particles) {
+			if (!p.getId().equals(particle.getId())) {
+				if (areOverlapping(particle, p)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static boolean areOverlapping(Particle p1, Particle p2) {
+		if (getCenterDistance(p1, p2) < (p1.getR() + p2.getR())) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static double getDistance(Particle p1, Particle p2) {
+		double centerDistance = Math.hypot(Math.abs(p2.getX() - p1.getX()), Math.abs(p2.getY() - p1.getY()));
 		return centerDistance - p1.getR() - p2.getR();
+	}
+	
+	private static double getCenterDistance(Particle p1, Particle p2) {
+		return Math.hypot(Math.abs(p2.getX() - p1.getX()), Math.abs(p2.getY() - p1.getY()));
 	}
 
 }

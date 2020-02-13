@@ -1,10 +1,13 @@
 package ar.com.itba.ss.datasetgenerator.model.cellindexmethod;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Particle {
+public class Particle implements Serializable {
+	
+	private static final long serialVersionUID = 2793512693176081070L;
 	
 	private Long id;
 	private Double x;
@@ -16,11 +19,9 @@ public class Particle {
 	private Double ax;
 	private Double ay;
 	private Double theta;
-	
-	private List<Particle> neighbors;
-	
-	public Particle() {}
-	
+		
+	private transient List<Particle> neighbors;
+		
 	public Particle(Long id, Double x, Double y, Double r, Double m, Double vx, Double vy, Double ax, Double ay, Double theta) {
 		this.id = id;
 		this.x = x;
