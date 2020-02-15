@@ -45,10 +45,6 @@ public class ImageGenerator {
 		log.info("Loading map.");
 		loadMap(trunk);
 		
-		for (Long particle : trunk.getParticleToPersonMap().keySet()) {
-			log.info("person for particle " + particle + ": " + trunk.getParticleToPersonMap().get(particle));
-		}
-		
 		log.info("Generating initial state.");
 		generateInitialState(trunk);
 		
@@ -115,7 +111,7 @@ public class ImageGenerator {
 	
 	private List<Particle> loadParticles(int instant) {
 		
-		String filename = format(Config.simulationDataBasepath + "/particles/particles%07d.json", instant);
+		String filename = format(Config.simulationDataBasepath + "/particles/particles_%07d.json", instant);
 		File file = new File(filename);
 		
 		String json = FileUtils.readStringFromFile(file);

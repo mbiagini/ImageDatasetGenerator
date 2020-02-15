@@ -76,10 +76,6 @@ public class Simulator {
 			
 			log.info(format("Running epoch: %d, KE: %f.", epoch, MetricUtils.getKyneticEnergy(particles)));
 			
-//			if (epoch > 1000 && MetricUtils.getKyneticEnergy(particles) <= 0.000000001) {
-//				throw new RuntimeException("REACHED");
-//			}
-			
 			log.debug("Generating cell-index-method's grid.");
 			Grid grid = generateCellIndexGrid(particles);
 			
@@ -127,16 +123,6 @@ public class Simulator {
 						
 			do {
 				
-//				if (id == 0) {
-//					double x = 300.0;
-//					double y = 475.0;
-//					p = new Particle(id, x, y, radius, Config.mass, speed * Math.cos(theta), speed * Math.sin(theta), acc, acc, theta);
-//				} else {
-//					double x = 300.0;
-//					double y = 440.0;
-//					p = new Particle(id, x, y, radius, Config.mass, speed * Math.cos(theta), speed * Math.sin(theta), acc, acc, theta);
-//				}
-				
 				double x = RandomUtils.randomDouble() * (w - 2 * radius) + radius;
 				double y = RandomUtils.randomDouble() * (h - 2 * radius) + radius;
 				
@@ -168,7 +154,7 @@ public class Simulator {
 		
 		Gson gson = new Gson();
 		String json = gson.toJson(particles);
-		String filename = format(Config.simulationDataBasepath + "/particles/particles%07d.json", instant);
+		String filename = format(Config.simulationDataBasepath + "/particles/particles_%07d.json", instant);
 		
 		File file = new File(filename);
 		FileUtils.saveStringToFile(file, json);

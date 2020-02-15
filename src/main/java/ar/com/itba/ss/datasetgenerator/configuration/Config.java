@@ -8,7 +8,7 @@ public class Config {
 	
 	public static Long randomSeed = 1L;
 	
-	public static ExecutionType executionType = ExecutionType.GENERATE_IMAGES;
+	public static ExecutionType executionType = ExecutionType.CLEAN_IMAGES;
 	
 	public static String imagesBasepath = "src/main/resources/data/images";
 	public static String infraredBasepath = "src/main/resources/data/infrared";
@@ -23,8 +23,11 @@ public class Config {
 	
 	public static String backgroundsRgbBasepath = "src/main/resources/data/backgrounds/rgb";
 	public static String backgroundsIrBasepath = "src/main/resources/data/backgrounds/ir";
-	public static String backgroundsRgbRegex = "background_([0-9]{1,3})_rgb.jpg";
-		
+	public static String backgroundsRgbRegex = "background_([0-9]{1,3})_rgb.bmp";
+	
+	public static Double backgroundRgbMultiplier = 1.0;
+	public static Double backgroundIrMultiplier = 3.0;
+	
 	public static Integer maxOccupationTests = 1000000;
 	
 	public static Double  cellIndexGridSide = 640.0;
@@ -37,6 +40,7 @@ public class Config {
 	public static Double dt = 0.00028;
 	
 	public static String  simulationDataBasepath = "src/main/resources/data/simulation";
+	public static String  simulationParticlesBasepath = "src/main/resources/data/simulation/particles";
 	public static Integer simulationParticles = 100;
 	public static Double  simulationStartVelocity = 0.0;
 	public static Integer simulationEphocs = 200000;

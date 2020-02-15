@@ -125,6 +125,23 @@ public class FileUtils {
 		
 	}
 	
+	public static void deleteAllFiles(String basepath) {
+		
+		File directory = new File(basepath);
+		
+		if (!directory.isDirectory()) {
+			log.error(format("%s is not a directory.", basepath));
+			throw new RuntimeException("Not a directory error");
+		}
+		
+		File[] files = directory.listFiles();
+		
+		for (File file : files) {
+			file.delete();
+		}
+		
+	}
+	
 	public static List<SSImage> readAllImages(String basepath, String regex) {
 		
 		List<SSImage> imageList = new ArrayList<>();

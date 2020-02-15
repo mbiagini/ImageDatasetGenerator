@@ -32,7 +32,7 @@ public class ImageUtils {
 		SSImage rgbImg = new SSImage()
 				.bufferedImage(rgbBi)
 				.basepath(Config.imagesBasepath)
-				.filename(format("image%07d.jpg", instant))
+				.filename(format("image_%07d.jpg", instant))
 				.extension(Config.datasetExtension);
 		
 		// IR Image
@@ -40,7 +40,7 @@ public class ImageUtils {
 		SSImage irImg = new SSImage()
 				.bufferedImage(irBi)
 				.basepath(Config.infraredBasepath)
-				.filename(format("infrared%07d.jpg", instant))
+				.filename(format("infrared_%07d.jpg", instant))
 				.extension(Config.datasetExtension);
 		
 		ImageGrid imgGrid = ImageGridManager.generateGrid(trunk.getBackground(), trunk.getPeople());

@@ -4,6 +4,9 @@ import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import ar.com.itba.ss.datasetgenerator.configuration.Config;
+import ar.com.itba.ss.datasetgenerator.engine.cleanse.Cleaner;
+import ar.com.itba.ss.datasetgenerator.engine.cleanse.ImagesCleaner;
+import ar.com.itba.ss.datasetgenerator.engine.cleanse.SimulationCleaner;
 import ar.com.itba.ss.datasetgenerator.engine.imagegeneration.ImageGenerator;
 import ar.com.itba.ss.datasetgenerator.engine.metricgeneration.MetricGenerator;
 import ar.com.itba.ss.datasetgenerator.engine.simulation.Simulator;
@@ -32,6 +35,18 @@ public class App {
 			case GENERATE_METRICS: {
 				MetricGenerator metricGenerator = new MetricGenerator();
 				metricGenerator.generate();
+				break;
+			}
+			
+			case CLEAN_SIMULATION: {
+				Cleaner cleaner = new SimulationCleaner();
+				cleaner.clean();
+				break;
+			}
+			
+			case CLEAN_IMAGES: {
+				Cleaner cleaner = new ImagesCleaner();
+				cleaner.clean();
 				break;
 			}
 		
