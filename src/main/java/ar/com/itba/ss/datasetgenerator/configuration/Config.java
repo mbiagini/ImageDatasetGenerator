@@ -8,7 +8,7 @@ public class Config {
 	
 	public static Long randomSeed = 1L;
 	
-	public static ExecutionType executionType = ExecutionType.CLEAN_IMAGES;
+	public static ExecutionType executionType = ExecutionType.GENERATE_IMAGES;
 	
 	public static String imagesBasepath = "src/main/resources/data/images";
 	public static String infraredBasepath = "src/main/resources/data/infrared";
@@ -21,12 +21,13 @@ public class Config {
 	public static String peopleIrBasepath = "src/main/resources/data/people/ir";
 	public static String peopleRgbRegex = "person_([0-9]{1,3})_rgb.bmp";
 	
-	public static String backgroundsRgbBasepath = "src/main/resources/data/backgrounds/rgb";
-	public static String backgroundsIrBasepath = "src/main/resources/data/backgrounds/ir";
-	public static String backgroundsRgbRegex = "background_([0-9]{1,3})_rgb.bmp";
+	public static String  backgroundsRgbBasepath = "src/main/resources/data/backgrounds/rgb";
+	public static String  backgroundsIrBasepath = "src/main/resources/data/backgrounds/ir";
+	public static String  backgroundsRgbRegex = "background_([0-9]{1,3})_rgb.bmp";
+	public static Integer backgroundNumber = 2;
 	
 	public static Double backgroundRgbMultiplier = 1.0;
-	public static Double backgroundIrMultiplier = 3.0;
+	public static Double backgroundIrMultiplier = 1.4;
 	
 	public static Integer maxOccupationTests = 1000000;
 	
@@ -41,8 +42,8 @@ public class Config {
 	
 	public static String  simulationDataBasepath = "src/main/resources/data/simulation";
 	public static String  simulationParticlesBasepath = "src/main/resources/data/simulation/particles";
-	public static Integer simulationParticles = 100;
-	public static Double  simulationStartVelocity = 0.0;
+	public static Integer simulationParticles = 300;
+	public static Double  simulationStartVelocity = 1.0;
 	public static Integer simulationEphocs = 200000;
 	public static Integer simulationSaveRate = 200;
 	public static Integer simulationWidth = 640;
@@ -57,7 +58,7 @@ public class Config {
 	public static Double socialB = 8.0;
 	
 	public static Double drivePointx = (double)simulationWidth / 2;
-	public static Double drivePointy = (double)simulationHeight;
+	public static Double drivePointy = (double)simulationHeight / 2;
 	
 	// metrics
 	public static Double densityXStart = drivePointx - 100;

@@ -89,7 +89,10 @@ public class ImageGenerator {
 		
 		log.info(format("Finished reading %d backgrounds.", backgroundImgs.size()));
 		
-		SSImage rgbImg = backgroundImgs.get(RandomUtils.randomIntBetween(0, backgroundImgs.size()));
+		//SSImage rgbImg = backgroundImgs.get(RandomUtils.randomIntBetween(0, backgroundImgs.size()));
+		
+		SSImage rgbImg = backgroundImgs.get(Config.backgroundNumber);
+		
 		SSImage irImg = FileUtils.readImage(Config.backgroundsIrBasepath, rgbImg.getFilename().replace("rgb", "ir"));
 		
 		trunk.setBackground(ImageResourceManager.initialize(rgbImg, irImg));
