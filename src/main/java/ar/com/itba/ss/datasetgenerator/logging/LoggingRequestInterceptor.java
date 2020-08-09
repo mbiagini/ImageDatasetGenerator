@@ -12,12 +12,11 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 
-import ar.com.itba.ss.datasetgenerator.configuration.Config;
-
 @Component
 public class LoggingRequestInterceptor implements ClientHttpRequestInterceptor {
 	
 	private static final Logger log = LoggerFactory.getLogger(LoggingRequestInterceptor.class);
+	private Integer loggingMaxLength = 1000;
 
 	@Override
 	public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
@@ -53,8 +52,8 @@ public class LoggingRequestInterceptor implements ClientHttpRequestInterceptor {
 		log.info("Status text  : {}", response.getStatusText());
 		log.info("Headers      : {}", response.getHeaders());
 		log.info("Response body: {}",
-				inputStringBuilder.toString().length() > Config.loggingMaxLength
-						? inputStringBuilder.toString().substring(0, Config.loggingMaxLength)
+				inputStringBuilder.toString().length() > loggingMaxLength
+						? inputStringBuilder.toString().substring(0, loggingMaxLength)
 								+ "\nResponse body continues..."
 						: inputStringBuilder.toString());
 		log.info("=================================INNER CALL RESPONSE END==================================");

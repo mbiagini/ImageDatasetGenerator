@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import ar.com.itba.ss.datasetgenerator.configuration.Config;
+import ar.com.itba.ss.datasetgenerator.configuration.Conf;
+import ar.com.itba.ss.datasetgenerator.configuration.HardConf;
 import ar.com.itba.ss.datasetgenerator.engine.utils.FileUtils;
 import ar.com.itba.ss.datasetgenerator.engine.utils.ImageUtils;
 import ar.com.itba.ss.datasetgenerator.engine.utils.RandomUtils;
@@ -32,14 +33,14 @@ public class ImageGenerator {
 	
 	private static Logger log = LoggerFactory.getLogger(ImageGenerator.class);
 
-	public void generate() {
+	public void generate(Conf conf, HardConf hardConf, int simulationStartNumber, int generationCount) {
 				
-		log.info("Generating images.");
+		log.info(format("Generating images. SimulationStartNumber: %d, GenerationCount: %d.)", 
+				simulationStartNumber, generationCount));
 		
-		ImageGenerationTrunk trunk = new ImageGenerationTrunk();
+		ImageGenerationTrunk trunk = new ImageGenerationTrunk(conf, hardConf);
 		
 		generatePeople(trunk);
-		
 		generateBackground(trunk);
 		
 		log.info("Loading map.");
@@ -48,10 +49,13 @@ public class ImageGenerator {
 		log.info("Generating initial state.");
 		generateInitialState(trunk);
 		
-		for (int instant = 0; instant < Config.generationCount; instant ++) {
+		for (int instant = simulationStartNumber; instant < simulationStartNumber + generationCount; instant ++) {
 			
 			log.info("Generating image: " + instant);
-			List<Particle> particles = loadParticles(instant);
+			List<Particle> particles = loadParticles(
+					trunk.getHardConf().getParticlesDirectory(),
+					trunk.getHardConf().getParticlesFormat(), 
+					instant);
 			ImageUtils.saveImage(trunk, particles, instant);
 			
 		}
@@ -65,11 +69,16 @@ public class ImageGenerator {
 		log.info("Generating people.");
 		log.info("Reading people.");
 		
-		List<ImageResource> people = FileUtils.readAllImages(Config.peopleRgbBasepath, Config.peopleRgbRegex).stream()
+		String irPeopleDirectory = trunk.getHardConf().getIrPeopleDirectory();
+		String rgbPeopleDirectory = trunk.getHardConf().getRgbPeopleDirectory();
+		String rgbPeopleRegex = trunk.getHardConf().getRgbPeopleRegex();
+		
+		List<ImageResource> people = FileUtils.readAllImages(rgbPeopleDirectory, rgbPeopleRegex)
+				.stream()
 				.map(rgbImg -> {
 					
-					SSImage irImg = FileUtils.readImage(Config.peopleIrBasepath, rgbImg.getFilename().replace("rgb", "ir"));
-					return ImageResourceManager.initialize(rgbImg, irImg);
+					SSImage irImg = FileUtils.readImage(irPeopleDirectory, rgbImg.getFilename().replace("rgb", "ir"));
+					return ImageResourceManager.initializeWithIrImg(rgbImg, irImg);
 					
 				})
 				.collect(Collectors.toList());
@@ -84,18 +93,26 @@ public class ImageGenerator {
 		
 		log.info("Generating background.");
 		log.info("Reading all backgrounds.");
-				
-		List<SSImage> backgroundImgs = FileUtils.readAllImages(Config.backgroundsRgbBasepath, Config.backgroundsRgbRegex);
+
+		List<SSImage> backgroundImgs = FileUtils.readAllImages(
+				trunk.getHardConf().getRgbBackgroundsDirectory(), 
+				trunk.getHardConf().getRgbBackgroundsRegex());
 		
 		log.info(format("Finished reading %d backgrounds.", backgroundImgs.size()));
 		
-		//SSImage rgbImg = backgroundImgs.get(RandomUtils.randomIntBetween(0, backgroundImgs.size()));
+		SSImage rgbImg = backgroundImgs.get(
+				RandomUtils.randomIntBetween(trunk.getConf().getRandom(), 0, backgroundImgs.size()));
+				
+		SSImage irImg = FileUtils.readImage(
+				trunk.getHardConf().getIrBackgroundsDirectory(), 
+				rgbImg.getFilename().replace("rgb", "ir"));
 		
-		SSImage rgbImg = backgroundImgs.get(Config.backgroundNumber);
-		
-		SSImage irImg = FileUtils.readImage(Config.backgroundsIrBasepath, rgbImg.getFilename().replace("rgb", "ir"));
-		
-		trunk.setBackground(ImageResourceManager.initialize(rgbImg, irImg));
+		if (trunk.getConf().isRandomUniformIrBackground()) {
+			trunk.setBackground(ImageResourceManager.initializeWithIrCustom(
+					rgbImg, trunk.getConf().getMinBackgroundValue(), trunk.getConf().getMaxBackgroundValue(), trunk.getConf().getRandom()));
+		} else {
+			trunk.setBackground(ImageResourceManager.initializeWithIrImg(rgbImg, irImg));
+		}
 		
 		log.info(format("Background selected: %s.", rgbImg.getFilename()));
 				
@@ -105,19 +122,17 @@ public class ImageGenerator {
 		
 		log.info("Generating initial state.");
 		
-		ImageGrid initialState = ImageGridManager.generateGrid(trunk.getBackground(), trunk.getPeople());
+		ImageGrid initialState = ImageGridManager.generateGrid(trunk.getConf(), trunk.getBackground(), trunk.getPeople());
 		trunk.setInitialState(initialState);
 		
 		log.debug(format("Initial ImageGrid created: %s.", initialState.toString()));
 				
 	}
 	
-	private List<Particle> loadParticles(int instant) {
+	private List<Particle> loadParticles(String particlesDirectory, String particlesFormat, int instant) {
 		
-		String filename = format(Config.simulationDataBasepath + "/particles/particles_%07d.json", instant);
-		File file = new File(filename);
-		
-		String json = FileUtils.readStringFromFile(file);
+		String filename = FileUtils.getPath(particlesDirectory, particlesFormat);
+		String json = FileUtils.readStringFromFile(new File(format(filename, instant)));
 		Type listType = new TypeToken<ArrayList<Particle>>() {}.getType();
 		
 		return new Gson().fromJson(json, listType);
@@ -125,8 +140,11 @@ public class ImageGenerator {
 	}
 	
 	private void loadMap(ImageGenerationTrunk trunk) {
+				
+		String filename = FileUtils.getPath(
+				trunk.getHardConf().getParticlesDirectory(),
+				trunk.getHardConf().getParticlesToPersonMapFilename());
 		
-		String filename = Config.simulationDataBasepath + "/particle_to_person_map.json";
 		File file = new File(filename);
 		
 		Gson gson = new Gson();

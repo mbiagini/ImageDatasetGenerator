@@ -5,12 +5,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ar.com.itba.ss.datasetgenerator.configuration.Config;
+import ar.com.itba.ss.datasetgenerator.configuration.Conf;
 import ar.com.itba.ss.datasetgenerator.engine.cellindexmethod.CellIndexManager;
 import ar.com.itba.ss.datasetgenerator.model.cellindexmethod.Particle;
+import ar.com.itba.ss.datasetgenerator.model.simulation.DrivePoint;
 import ar.com.itba.ss.datasetgenerator.model.simulation.Force;
-
-import static java.lang.String.format;
 
 public class MovementManager {
 	
@@ -19,16 +18,16 @@ public class MovementManager {
 	// to prevent scenarios where x + r = side.
 	final static Double EPSILON = 0.001;
 	
-	public static void moveParticles(List<Particle> particles) {
+	public static void updateParticlesAcceleration(Conf conf, List<Particle> particles, DrivePoint drivePoint) {
 
 		// update all the accelerations
 		for (Particle p : particles) {
-			updateParticleAcceleration(p);
+			updateParticleAcceleration(conf, p, drivePoint);
 		}
 		
 	}
 	
-	private static void updateParticleAcceleration(Particle p) {
+	private static void updateParticleAcceleration(Conf conf, Particle p, DrivePoint drivePoint) {
 		
 		log.debug("Updating acceleration of particle: " + p.getId());
 		
@@ -38,7 +37,7 @@ public class MovementManager {
 		// forces against other particles
 		if (p.getNeighbors() != null) {
 			for (Particle n : p.getNeighbors()) {
-				Force f = getForceAgainstParticle(p, n, Config.kn, Config.gamma);
+				Force f = getForceAgainstParticle(p, n, conf.getKn(), conf.getGamma());
 				fx += f.getFx();
 				fy += f.getFy();	
 			}
@@ -47,14 +46,14 @@ public class MovementManager {
 		log.debug("forces against neighbors: " + new Force(fx,fy).toString());
 		
 		// forces against the walls
-		Force f = getForceAgainstSurface(p, Config.simulationWidth, Config.simulationHeight, Config.kn, Config.gamma);
+		Force f = getForceAgainstSurface(p, conf.getWidth(), conf.getHeight(), conf.getKn(), conf.getGamma());
 		fx += f.getFx();
 		fy += f.getFy();
 		
 		log.debug("forces against walls: " + f.toString());
 				
 		// driving force
-		Force df = getDrivingForce(p, Config.driveSpeed, Config.tau, Config.drivePointx, Config.drivePointy);
+		Force df = getDrivingForce(p, conf.getDriveSpeed(), conf.getTau(), drivePoint.getX(), drivePoint.getY());
 		
 		fx += df.getFx();
 		fy += df.getFy();
@@ -62,7 +61,7 @@ public class MovementManager {
 		log.debug("forces of driving: " + df.toString());
 		
 		// social force
-		Force sf = getSocialForce(p, p.getNeighbors(), Config.socialA, Config.socialB);
+		Force sf = getSocialForce(p, p.getNeighbors(), conf.getSocialA(), conf.getSocialB());
 		fx += sf.getFx();
 		fy += sf.getFy();
 		

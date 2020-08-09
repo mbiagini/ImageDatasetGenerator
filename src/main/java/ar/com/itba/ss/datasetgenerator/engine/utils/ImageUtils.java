@@ -8,9 +8,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ar.com.itba.ss.datasetgenerator.configuration.Config;
 import ar.com.itba.ss.datasetgenerator.engine.imagegeneration.ImageGridManager;
 import ar.com.itba.ss.datasetgenerator.model.ImageGrid;
+import ar.com.itba.ss.datasetgenerator.model.PixelMultiplier;
 import ar.com.itba.ss.datasetgenerator.model.Point;
 import ar.com.itba.ss.datasetgenerator.model.SSImage;
 import ar.com.itba.ss.datasetgenerator.model.cellindexmethod.Particle;
@@ -31,19 +31,19 @@ public class ImageUtils {
 		BufferedImage rgbBi = new BufferedImage(initialState.getWidth(), initialState.getHeight(), BufferedImage.TYPE_INT_RGB);
 		SSImage rgbImg = new SSImage()
 				.bufferedImage(rgbBi)
-				.basepath(Config.imagesBasepath)
-				.filename(format("image_%07d.jpg", instant))
-				.extension(Config.datasetExtension);
+				.basepath(trunk.getHardConf().getRgbImagesDirectory())
+				.filename(format(trunk.getHardConf().getRgbImagesFormat(), instant))
+				.extension("jpg");
 		
 		// IR Image
 		BufferedImage irBi = new BufferedImage(initialState.getWidth(), initialState.getHeight(), BufferedImage.TYPE_INT_RGB);
 		SSImage irImg = new SSImage()
 				.bufferedImage(irBi)
-				.basepath(Config.infraredBasepath)
-				.filename(format("infrared_%07d.jpg", instant))
-				.extension(Config.datasetExtension);
+				.basepath(trunk.getHardConf().getIrImagesDirectory())
+				.filename(format(trunk.getHardConf().getIrImagesFormat(), instant))
+				.extension("jpg");
 		
-		ImageGrid imgGrid = ImageGridManager.generateGrid(trunk.getBackground(), trunk.getPeople());
+		ImageGrid imgGrid = ImageGridManager.generateGrid(trunk.getConf(), trunk.getBackground(), trunk.getPeople());
 		
 		Integer[][] imgGridColorCanvas = imgGrid.getColorCanvas();
 		Integer[][] imgGridIRCanvas = imgGrid.getIrCanvas();
@@ -85,23 +85,14 @@ public class ImageUtils {
 			
 		}
 		
-		Integer[][] initialColorCanvas = initialState.getColorCanvas();
-		Integer[][] initialIrCanvas = initialState.getIrCanvas();
+		PixelMultiplier rgbMultiplier = trunk.getConf().getRgbMultipliers().get(
+				RandomUtils.randomIntBetween(trunk.getConf().getRandom(), 0, trunk.getConf().getRgbMultipliers().size()));
 				
 		for (int x = 0; x < rgbImg.getWidth(); x++) {
 			for (int y = 0; y < rgbImg.getHeight(); y++) {
 				
-				if (imgGridColorCanvas[x][y] == Color.WHITE.getRGB()) {
-					
-					rgbBi.setRGB(x, y, initialColorCanvas[x][y]);
-					irBi.setRGB(x, y, initialIrCanvas[x][y]);
-					
-				} else {
-					
-					rgbBi.setRGB(x, y, imgGridColorCanvas[x][y]);
-					irBi.setRGB(x, y, imgGridIRCanvas[x][y]);
-					
-				}
+				rgbBi.setRGB(x, y, brightAdvanced(imgGridColorCanvas[x][y], rgbMultiplier));
+				irBi.setRGB(x, y, imgGridIRCanvas[x][y]);
 				
 			}
 		}
@@ -109,6 +100,36 @@ public class ImageUtils {
 		FileUtils.saveImage(rgbImg);
 		FileUtils.saveImage(irImg);
 		
+	}
+	
+	public static int bright(int pixel, double multiplier) {
+		
+		return brightAdvanced(pixel, new PixelMultiplier(multiplier));
+		
+	}
+	
+	public static int brightAdvanced(int pixel, PixelMultiplier multiplier) {
+		
+		Color color = new Color(pixel);
+		
+		int red = multiplyValue(color.getRed(), multiplier.getRedScale());
+		int green = multiplyValue(color.getGreen(), multiplier.getGreenScale());
+		int blue = multiplyValue(color.getBlue(), multiplier.getBlueScale());
+		
+		Color newColor = new Color(red, green, blue);
+		
+		return newColor.getRGB();
+		
+	}
+	
+	private static int multiplyValue(int value, double multiplier) {
+		int response = value;
+		if (value * multiplier > 255.0) {
+			response = 255;
+		} else {
+			response = new Double(value * multiplier).intValue();
+		}
+		return response;
 	}
 
 }

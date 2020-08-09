@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -28,83 +30,83 @@ public class FileUtils {
 	
 	private static Logger log = LoggerFactory.getLogger(FileUtils.class);
 	
-	public static void saveStringToFile(File file, String data) {
-		
-		try (PrintWriter pw = new PrintWriter(file)) {
-			
-			pw.print(data);
-			pw.close();
-			
-		} catch (FileNotFoundException exception) {
-			
-			throw new RuntimeException("Error while writing to file " + file.getName());
-			
+	public static String getPath(String... args) {
+		Path path = null;
+		for (String arg : args) {
+			if (path == null) {
+				path = Paths.get(arg);
+			} else {
+				path = Paths.get(path.toString(), arg);
+			}
 		}
-		
+		return path.toString();
 	}
 	
+	/**
+	 * Saves a string to a given file.
+	 */
+	public static void saveStringToFile(File file, String data) {
+		try (PrintWriter pw = new PrintWriter(file)) {
+			pw.print(data);
+			pw.close();
+		} catch (FileNotFoundException exception) {
+			throw new RuntimeException("Error while writing to file " + file.getName());
+		}
+	}
+	
+	/**
+	 * Reads the given file as a string.
+	 */
 	public static String readStringFromFile(File file) {
-		
 		try {
-			
 			InputStream is = new FileInputStream(file);
 			BufferedReader buf = new BufferedReader(new InputStreamReader(is));
-			
 			String line = buf.readLine(); 
 			StringBuilder sb = new StringBuilder();
-			
 			while(line != null) { 
 				sb.append(line).append("\n");
 				line = buf.readLine();
 			} 
-			
 			buf.close();
-			
 			return sb.toString();
-			
 		} catch (Exception exception) {
-			
 			throw new RuntimeException("Exception while reading from file " + file.getName());
-			
 		}
-		
-		
 	}
 	
+	/**
+	 * Saves the given image to a file.
+	 */
 	public static void saveImage(SSImage image) {
-		
-		File file = new File(format("%s/%s", image.getBasepath(), image.getFilename()));
-		
+		File file = new File(getPath(image.getBasepath(), image.getFilename()));
 		try {
 			ImageIO.write(image.getBufferedImage(), image.getExtension(), file);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
+	/**
+	 * Reads image from file.
+	 */
 	public static BufferedImage readBufferedImageFromFile(File file) {
-		
 		if (file == null || !file.exists()) {
 			log.error("Cannot read image from inexistent file.");
 			throw new RuntimeException("Runtime Error");
-		}
-		
+		}	
 		try {
 			return ImageIO.read(file);
 		} catch (IOException exception) {
 			log.error("IOException while reading bufferedImage from " + file.getName());
 			throw new RuntimeException("Runtime Error");
 		}
-		
 	}
 	
-	public static File[] readAllFilesMatching(String basepath, String regex) {
+	public static File[] readAllFilesMatching(String basepath, String regex) {	
 		
 		log.info(format("Reading all files in %s matching %s.", basepath, regex));
-		
 		File directory = new File(basepath);
-		
+
 		if (!directory.isDirectory()) {
 			log.error(format("%s is not a directory.", basepath));
 			throw new RuntimeException("Not a directory error");
@@ -125,21 +127,18 @@ public class FileUtils {
 		
 	}
 	
-	public static void deleteAllFiles(String basepath) {
-		
-		File directory = new File(basepath);
-		
-		if (!directory.isDirectory()) {
-			log.error(format("%s is not a directory.", basepath));
-			throw new RuntimeException("Not a directory error");
-		}
-		
-		File[] files = directory.listFiles();
-		
-		for (File file : files) {
-			file.delete();
-		}
-		
+	/**
+	 * Deletes all files in the given path recursively, leaving only empty directories.
+	 */
+	public static void deleteFiles(String path) {
+		File file = new File(path);
+		if (file.isDirectory())
+	        for (File f : file.listFiles()) {
+	        	deleteFiles(f.getAbsolutePath());
+	        }
+	    else {
+	    	file.delete();
+	    }		
 	}
 	
 	public static List<SSImage> readAllImages(String basepath, String regex) {
