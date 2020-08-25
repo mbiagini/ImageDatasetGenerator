@@ -11,9 +11,7 @@ import ar.com.itba.ss.datasetgenerator.configuration.Conf;
 import ar.com.itba.ss.datasetgenerator.configuration.HardConf;
 import ar.com.itba.ss.datasetgenerator.engine.utils.FileUtils;
 import ar.com.itba.ss.datasetgenerator.engine.utils.ImageUtils;
-import ar.com.itba.ss.datasetgenerator.engine.utils.RandomUtils;
 import ar.com.itba.ss.datasetgenerator.model.ImageGrid;
-import ar.com.itba.ss.datasetgenerator.model.SSImage;
 import ar.com.itba.ss.datasetgenerator.model.cellindexmethod.Particle;
 import ar.com.itba.ss.datasetgenerator.model.imagegeneration.ImageGenerationTrunk;
 import ar.com.itba.ss.datasetgenerator.model.imagegeneration.ImageResource;
@@ -26,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class ImageGenerator {
@@ -39,9 +36,8 @@ public class ImageGenerator {
 				simulationStartNumber, generationCount));
 		
 		ImageGenerationTrunk trunk = new ImageGenerationTrunk(conf, hardConf);
-		
-		generatePeople(trunk);
-		generateBackground(trunk);
+		trunk.setPeople(conf.getPeople());
+		trunk.setBackground(conf.getBackground());
 		
 		log.info("Loading map.");
 		loadMap(trunk);
@@ -53,68 +49,16 @@ public class ImageGenerator {
 			
 			log.info("Generating image: " + instant);
 			List<Particle> particles = loadParticles(
-					trunk.getHardConf().getParticlesDirectory(),
-					trunk.getHardConf().getParticlesFormat(), 
-					instant);
-			ImageUtils.saveImage(trunk, particles, instant);
+					hardConf.getParticlesDirectory(),
+					hardConf.getParticlesFormat(), 
+					instant,
+					conf.getCameraHeight().getLabel());
+			
+			ImageUtils.saveImage(trunk, particles, instant, conf.getCameraHeight().getLabel());
 			
 		}
 		
 		log.info("------------------------------------------------------------------------------------------");
-				
-	}
-	
-	private void generatePeople(ImageGenerationTrunk trunk) {
-		
-		log.info("Generating people.");
-		log.info("Reading people.");
-		
-		String irPeopleDirectory = trunk.getHardConf().getIrPeopleDirectory();
-		String rgbPeopleDirectory = trunk.getHardConf().getRgbPeopleDirectory();
-		String rgbPeopleRegex = trunk.getHardConf().getRgbPeopleRegex();
-		
-		List<ImageResource> people = FileUtils.readAllImages(rgbPeopleDirectory, rgbPeopleRegex)
-				.stream()
-				.map(rgbImg -> {
-					
-					SSImage irImg = FileUtils.readImage(irPeopleDirectory, rgbImg.getFilename().replace("rgb", "ir"));
-					return ImageResourceManager.initializeWithIrImg(rgbImg, irImg);
-					
-				})
-				.collect(Collectors.toList());
-		
-		trunk.setPeople(people);
-		
-		log.info(format("Finished reading and saving %d people.", people.size()));
-		
-	}
-	
-	private void generateBackground(ImageGenerationTrunk trunk) {
-		
-		log.info("Generating background.");
-		log.info("Reading all backgrounds.");
-
-		List<SSImage> backgroundImgs = FileUtils.readAllImages(
-				trunk.getHardConf().getRgbBackgroundsDirectory(), 
-				trunk.getHardConf().getRgbBackgroundsRegex());
-		
-		log.info(format("Finished reading %d backgrounds.", backgroundImgs.size()));
-		
-		SSImage rgbImg = backgroundImgs.get(
-				RandomUtils.randomIntBetween(trunk.getConf().getRandom(), 0, backgroundImgs.size()));
-				
-		SSImage irImg = FileUtils.readImage(
-				trunk.getHardConf().getIrBackgroundsDirectory(), 
-				rgbImg.getFilename().replace("rgb", "ir"));
-		
-		if (trunk.getConf().isRandomUniformIrBackground()) {
-			trunk.setBackground(ImageResourceManager.initializeWithIrCustom(
-					rgbImg, trunk.getConf().getMinBackgroundValue(), trunk.getConf().getMaxBackgroundValue(), trunk.getConf().getRandom()));
-		} else {
-			trunk.setBackground(ImageResourceManager.initializeWithIrImg(rgbImg, irImg));
-		}
-		
-		log.info(format("Background selected: %s.", rgbImg.getFilename()));
 				
 	}
 		
@@ -126,13 +70,13 @@ public class ImageGenerator {
 		trunk.setInitialState(initialState);
 		
 		log.debug(format("Initial ImageGrid created: %s.", initialState.toString()));
-				
+		
 	}
 	
-	private List<Particle> loadParticles(String particlesDirectory, String particlesFormat, int instant) {
+	private List<Particle> loadParticles(String particlesDirectory, String particlesFormat, int instant, String label) {
 		
 		String filename = FileUtils.getPath(particlesDirectory, particlesFormat);
-		String json = FileUtils.readStringFromFile(new File(format(filename, instant)));
+		String json = FileUtils.readStringFromFile(new File(format(filename, instant, label)));
 		Type listType = new TypeToken<ArrayList<Particle>>() {}.getType();
 		
 		return new Gson().fromJson(json, listType);

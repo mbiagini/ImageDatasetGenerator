@@ -1,4 +1,4 @@
-package ar.com.itba.ss.datasetgenerator.model;
+package ar.com.itba.ss.datasetgenerator.model.config;
 
 public class PixelMultiplier {
 	

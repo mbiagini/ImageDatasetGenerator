@@ -10,10 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import ar.com.itba.ss.datasetgenerator.engine.imagegeneration.ImageGridManager;
 import ar.com.itba.ss.datasetgenerator.model.ImageGrid;
-import ar.com.itba.ss.datasetgenerator.model.PixelMultiplier;
 import ar.com.itba.ss.datasetgenerator.model.Point;
 import ar.com.itba.ss.datasetgenerator.model.SSImage;
 import ar.com.itba.ss.datasetgenerator.model.cellindexmethod.Particle;
+import ar.com.itba.ss.datasetgenerator.model.config.PixelMultiplier;
 import ar.com.itba.ss.datasetgenerator.model.imagegeneration.ImageGenerationTrunk;
 import ar.com.itba.ss.datasetgenerator.model.imagegeneration.ImageResource;
 
@@ -23,7 +23,7 @@ public class ImageUtils {
 
 	private static Logger log = LoggerFactory.getLogger(ImageUtils.class);
 	
-	public static void saveImage(ImageGenerationTrunk trunk, List<Particle> particles, int instant) {
+	public static void saveImage(ImageGenerationTrunk trunk, List<Particle> particles, int instant, String label) {
 		
 		ImageGrid initialState = trunk.getInitialState();
 		
@@ -32,7 +32,7 @@ public class ImageUtils {
 		SSImage rgbImg = new SSImage()
 				.bufferedImage(rgbBi)
 				.basepath(trunk.getHardConf().getRgbImagesDirectory())
-				.filename(format(trunk.getHardConf().getRgbImagesFormat(), instant))
+				.filename(format(trunk.getHardConf().getRgbImagesFormat(), instant, label))
 				.extension("jpg");
 		
 		// IR Image
@@ -40,7 +40,7 @@ public class ImageUtils {
 		SSImage irImg = new SSImage()
 				.bufferedImage(irBi)
 				.basepath(trunk.getHardConf().getIrImagesDirectory())
-				.filename(format(trunk.getHardConf().getIrImagesFormat(), instant))
+				.filename(format(trunk.getHardConf().getIrImagesFormat(), instant, label))
 				.extension("jpg");
 		
 		ImageGrid imgGrid = ImageGridManager.generateGrid(trunk.getConf(), trunk.getBackground(), trunk.getPeople());
@@ -85,8 +85,7 @@ public class ImageUtils {
 			
 		}
 		
-		PixelMultiplier rgbMultiplier = trunk.getConf().getRgbMultipliers().get(
-				RandomUtils.randomIntBetween(trunk.getConf().getRandom(), 0, trunk.getConf().getRgbMultipliers().size()));
+		PixelMultiplier rgbMultiplier = trunk.getConf().getRgbMultiplier();
 				
 		for (int x = 0; x < rgbImg.getWidth(); x++) {
 			for (int y = 0; y < rgbImg.getHeight(); y++) {
@@ -103,9 +102,7 @@ public class ImageUtils {
 	}
 	
 	public static int bright(int pixel, double multiplier) {
-		
 		return brightAdvanced(pixel, new PixelMultiplier(multiplier));
-		
 	}
 	
 	public static int brightAdvanced(int pixel, PixelMultiplier multiplier) {

@@ -6,10 +6,10 @@ package ar.com.itba.ss.datasetgenerator.configuration;
 public class HardConf {
 	
 	private String rgbImagesDirectory = "src/main/resources/data/images/rgb";
-	private String rgbImagesFormat = "rgb_image_%07d.jpg";
+	private String rgbImagesFormat = "rgb_image_%07d_%s.jpg";
 	
 	private String irImagesDirectory = "src/main/resources/data/images/ir";
-	private String irImagesFormat = "ir_image_%07d.jpg";
+	private String irImagesFormat = "ir_image_%07d_%s.jpg";
 	
 	private String rgbPeopleDirectory = "src/main/resources/data/people/rgb";
 	private String irPeopleDirectory = "src/main/resources/data/people/ir";
@@ -20,7 +20,7 @@ public class HardConf {
 	private String rgbBackgroundsRegex = "background_([0-9]+)_rgb.bmp";
 	
 	private String particlesDirectory = "src/main/resources/data/simulation/particles";
-	private String particlesFormat = "particles_%07d.json";
+	private String particlesFormat = "particles_%07d_%s.json";
 	private String particlesToPersonMapFilename = "particles_to_people_map.json";
 	
 	private String configFilePath = "src/main/resources/configuration.json";

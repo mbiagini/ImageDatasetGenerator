@@ -1,5 +1,5 @@
 {
-  "randomSeed": 2,
+  "randomSeed": 11,
   "width": 1024,
   "height": 768,
   "cellIndexGridSide": 1024.0,
@@ -15,25 +15,33 @@
   "socialB": 8.0,
   "epochs": 2500,
   "saveRate": 500,
-  "randomAmountOfParticles": true,
-  "minParticleCount": 100,
-  "maxParticleCount": 700,
-  "fixedParticleCount": 500,
   "particleInsertionRetries": 100000,
-  "randomUniformIrBackground": true,
-  "minBackgroundValue": 100,
-  "maxBackgroundValue": 140,
+  "cameraHeights": [
+  	{
+      "label": "b",
+      "minParticleCount": 100,
+      "maxParticleCount": 700  	
+  	},
+  	{
+  	  "label": "a",
+  	  "minParticleCount": 400,
+  	  "maxParticleCount": 2800
+  	}
+  ],
+  "uniformBackgrounds": [],
   "irMultipliers": [
-    1.0
+    0.7,
+    1.0,
+    1.3
   ],
   "rgbMultipliers": [
   	{
-      "redScale": 1,
-      "blueScale": 1,
-      "greenScale": 1
+      "redScale": 0.05,
+      "blueScale": 0.05,
+      "greenScale": 0.05
     }
   ],
-  "cleanImagesDirectories": true,
-  "simulationStartNumber": 1,
-  "numberOfSimulations": 1
+  "simulationStartNumber": 541,
+  "simulationIterations": 4,
+  "cleanImagesDirectories": false
 }

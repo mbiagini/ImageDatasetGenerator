@@ -8,11 +8,9 @@ import com.google.gson.Gson;
 import ar.com.itba.ss.datasetgenerator.configuration.Conf;
 import ar.com.itba.ss.datasetgenerator.configuration.HardConf;
 import ar.com.itba.ss.datasetgenerator.engine.cellindexmethod.CellIndexManager;
-import ar.com.itba.ss.datasetgenerator.engine.imagegeneration.ImageResourceManager;
 import ar.com.itba.ss.datasetgenerator.engine.utils.FileUtils;
 import ar.com.itba.ss.datasetgenerator.engine.utils.MetricUtils;
 import ar.com.itba.ss.datasetgenerator.engine.utils.RandomUtils;
-import ar.com.itba.ss.datasetgenerator.model.SSImage;
 import ar.com.itba.ss.datasetgenerator.model.cellindexmethod.Grid;
 import ar.com.itba.ss.datasetgenerator.model.cellindexmethod.Particle;
 import ar.com.itba.ss.datasetgenerator.model.imagegeneration.ImageResource;
@@ -26,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Simulator {
 	
@@ -42,22 +39,13 @@ public class Simulator {
 	public SimulationTrunk generateSimulation(Conf conf, HardConf hardConf) {
 		
 		log.info("Generating simulation.");
-		
-		log.info("Reading people.");
-		List<ImageResource> people = FileUtils.readAllImages(hardConf.getRgbPeopleDirectory(), hardConf.getRgbPeopleRegex())
-				.stream()
-				.map(rgbImg -> {
-					SSImage irImg = FileUtils.readImage(hardConf.getIrPeopleDirectory(), rgbImg.getFilename().replace("rgb", "ir"));
-					return ImageResourceManager.initializeWithIrImg(rgbImg, irImg);
-				})
-				.collect(Collectors.toList());
-		log.info(format("Finished reading %d people.", people.size()));
 	
 		SimulationTrunk trunk = new SimulationTrunk(conf, hardConf);
-		trunk.setPeople(new ArrayList<>(people));
+		trunk.setPeople(conf.getPeople());
 		
 		log.info("Generating random particles.");
 		generateRandomParticles(trunk);
+		
 		saveMap(hardConf, trunk.getParticleToPersonMap());
 		
 		return trunk;
@@ -96,7 +84,7 @@ public class Simulator {
 			if (saveRate != 0 && epoch % saveRate == 0) {
 				
 				log.debug("Saving particles.");
-				saveParticles(hardConf, particles, simulationNumber);
+				saveParticles(hardConf, conf, particles, simulationNumber);
 				simulationNumber ++;
 				
 			}
@@ -124,16 +112,13 @@ public class Simulator {
 		double w = new Double(conf.getWidth());
 		
 		int simulationParticles = 0;
-		if (conf.isRandomAmountOfParticles()) {
-			simulationParticles = RandomUtils.randomIntBetween(
-					conf.getRandom(),
-					conf.getMinParticleCount(),
-					conf.getMaxParticleCount());
-			log.info(format("Number of particles to generate: %d.", simulationParticles));
-		} else {
-			simulationParticles = conf.getFixedParticleCount();
-		}
-				
+		simulationParticles = RandomUtils.randomIntBetween(
+				conf.getRandom(), 
+				conf.getCameraHeight().getMinParticleCount(),
+				conf.getCameraHeight().getMaxParticleCount());
+		
+		log.info(format("Number of particles to generate: %d.", simulationParticles));
+			
 		for (long id = 0L; id < simulationParticles; id ++) {
 			
 			ImageResource person = people.get(RandomUtils.randomIntBetween(conf.getRandom(), 0, people.size()));
@@ -161,26 +146,22 @@ public class Simulator {
 		
 		trunk.setParticles(particles);
 		trunk.setParticleToPersonMap(particleToPersonMap);
-				
+		
 	}
 		
 	private Grid generateCellIndexGrid(Conf conf, List<Particle> particles) {
-		
 		Grid grid = new Grid(conf.getCellIndexGridSide(), conf.getCellIndexGridSize());
-		
 		CellIndexManager.allocateParticlesInGrid(particles, grid);
-				
 		return grid;
-		
 	}
 	
-	private void saveParticles(HardConf hardConf, List<Particle> particles, int instant) {
+	private void saveParticles(HardConf hardConf, Conf conf, List<Particle> particles, int instant) {
 		
 		Gson gson = new Gson();
 		String json = gson.toJson(particles);
 		
 		String filename = FileUtils.getPath(hardConf.getParticlesDirectory(), hardConf.getParticlesFormat());
-		filename = format(filename, instant);
+		filename = format(filename, instant, conf.getCameraHeight().getLabel());
 		
 		File file = new File(filename);
 		FileUtils.saveStringToFile(file, json);

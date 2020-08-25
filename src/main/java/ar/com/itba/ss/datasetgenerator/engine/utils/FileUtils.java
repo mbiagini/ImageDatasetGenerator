@@ -104,7 +104,6 @@ public class FileUtils {
 	
 	public static File[] readAllFilesMatching(String basepath, String regex) {	
 		
-		log.info(format("Reading all files in %s matching %s.", basepath, regex));
 		File directory = new File(basepath);
 
 		if (!directory.isDirectory()) {
@@ -142,6 +141,8 @@ public class FileUtils {
 	}
 	
 	public static List<SSImage> readAllImages(String basepath, String regex) {
+		
+		log.info(format("Reading all images from %s matching regex ", basepath, regex));
 		
 		List<SSImage> imageList = new ArrayList<>();
 		
